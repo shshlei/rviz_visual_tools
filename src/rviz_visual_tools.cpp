@@ -1218,6 +1218,26 @@ bool RvizVisualTools::publishSphere(const geometry_msgs::msg::Point& point, Colo
   return publishSphere(pose_msg, color, scale, ns, id);
 }
 
+bool RvizVisualTools::publishSphere(const geometry_msgs::msg::Point& point, Colors color,
+                                    double scale, const std::string& ns, std::size_t id)
+{
+  geometry_msgs::msg::Pose pose_msg = getIdentityPose();
+  pose_msg.position = point;
+  return publishSphere(pose_msg, color, scale, ns, id);
+}
+
+bool RvizVisualTools::publishSphere(const geometry_msgs::msg::Point& point, const std_msgs::msg::ColorRGBA& color,
+                                    double scale, const std::string& ns, std::size_t id)
+{
+  geometry_msgs::msg::Pose pose_msg = getIdentityPose();
+  pose_msg.position = point;
+  geometry_msgs::msg::Vector3 scale_msg;
+  scale_msg.x = scale * global_scale_;
+  scale_msg.y = scale * global_scale_;
+  scale_msg.z = scale * global_scale_;
+  return publishSphere(pose_msg, color, scale_msg, ns, id);
+}
+
 bool RvizVisualTools::publishSphere(const geometry_msgs::msg::Pose& pose, Colors color,
                                     Scales scale, const std::string& ns, std::size_t id)
 {
@@ -1928,6 +1948,7 @@ bool RvizVisualTools::publishCuboid(const geometry_msgs::msg::Pose& pose, double
   return publishMarker(cuboid_marker_);
 }
 
+/*
 bool RvizVisualTools::publishLine(const Eigen::Isometry3d& point1, const Eigen::Isometry3d& point2,
                                   Colors color, Scales scale)
 {
@@ -1988,6 +2009,87 @@ bool RvizVisualTools::publishLine(const geometry_msgs::msg::Point& point1,
   line_strip_marker_.header.stamp = clock_interface_->get_clock()->now();
 
   line_strip_marker_.id++;
+  line_strip_marker_.color = color;
+  line_strip_marker_.scale = scale;
+  line_strip_marker_.scale.y = 0;
+  line_strip_marker_.scale.z = 0;
+
+  line_strip_marker_.points.clear();
+  line_strip_marker_.points.push_back(point1);
+  line_strip_marker_.points.push_back(point2);
+
+  // Helper for publishing rviz markers
+  return publishMarker(line_strip_marker_);
+}
+*/
+
+bool RvizVisualTools::publishLine(const Eigen::Isometry3d& point1, const Eigen::Isometry3d& point2,
+                                  Colors color, Scales scale, std::size_t id)
+{
+  return publishLine(convertPoseToPoint(point1), convertPoseToPoint(point2), color, scale, id);
+}
+
+bool RvizVisualTools::publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2,
+                                  Colors color, Scales scale, std::size_t id)
+{
+  return publishLine(convertPoint(point1), convertPoint(point2), color, scale, id);
+}
+bool RvizVisualTools::publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2,
+                                  Colors color, double radius, std::size_t id)
+{
+  geometry_msgs::msg::Vector3 scale;
+  scale.x = radius * global_scale_;
+  scale.y = radius * global_scale_;
+  scale.z = radius * global_scale_;
+  return publishLine(convertPoint(point1), convertPoint(point2), getColor(color), scale, id);
+}
+
+bool RvizVisualTools::publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2,
+                                  const std_msgs::msg::ColorRGBA& color, Scales scale, std::size_t id)
+{
+  return publishLine(convertPoint(point1), convertPoint(point2), color, scale, id);
+}
+
+bool RvizVisualTools::publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2,
+                                  const std_msgs::msg::ColorRGBA& color, double radius, std::size_t id)
+{
+  geometry_msgs::msg::Vector3 scale;
+  scale.x = radius * global_scale_;
+  scale.y = radius * global_scale_;
+  scale.z = radius * global_scale_;
+  return publishLine(convertPoint(point1), convertPoint(point2), color, scale, id);
+}
+
+bool RvizVisualTools::publishLine(const geometry_msgs::msg::Point& point1,
+                                  const geometry_msgs::msg::Point& point2, Colors color,
+                                  Scales scale, std::size_t id)
+{
+  return publishLine(point1, point2, getColor(color), scale, id);
+}
+
+bool RvizVisualTools::publishLine(const geometry_msgs::msg::Point& point1,
+                                  const geometry_msgs::msg::Point& point2,
+                                  const std_msgs::msg::ColorRGBA& color, Scales scale, std::size_t id)
+{
+  return publishLine(point1, point2, color, getScale(scale), id);
+}
+
+bool RvizVisualTools::publishLine(const geometry_msgs::msg::Point& point1,
+                                  const geometry_msgs::msg::Point& point2,
+                                  const std_msgs::msg::ColorRGBA& color,
+                                  const geometry_msgs::msg::Vector3& scale, std::size_t id)
+{
+  // Set the timestamp
+  line_strip_marker_.header.stamp = clock_interface_->get_clock()->now();
+
+  if (id == 0)
+  {
+     line_strip_marker_.id++;  
+  }
+  else
+  {
+    line_strip_marker_.id = id;
+  }
   line_strip_marker_.color = color;
   line_strip_marker_.scale = scale;
   line_strip_marker_.scale.y = 0;
@@ -2254,6 +2356,30 @@ bool RvizVisualTools::publishPath(const EigenSTL::vector_Vector3d& path,
 
 bool RvizVisualTools::publishPolygon(const geometry_msgs::msg::Polygon& polygon, Colors color,
                                      Scales scale, const std::string& ns)
+{
+  std::vector<geometry_msgs::msg::Point> points;
+  geometry_msgs::msg::Point temp;
+  geometry_msgs::msg::Point first;  // remember first point because we will connect
+                                    // first and last points
+                                    // for last line
+  for (std::size_t i = 0; i < polygon.points.size(); ++i)
+  {
+    temp.x = polygon.points[i].x;
+    temp.y = polygon.points[i].y;
+    temp.z = polygon.points[i].z;
+    if (i == 0)
+    {
+      first = temp;
+    }
+    points.push_back(temp);
+  }
+  points.push_back(first);  // connect first and last points for last line
+
+  return publishPath(points, color, scale, ns);
+}
+
+bool RvizVisualTools::publishPolygon(const geometry_msgs::msg::Polygon& polygon, Colors color,
+                                     double scale, const std::string& ns)
 {
   std::vector<geometry_msgs::msg::Point> points;
   geometry_msgs::msg::Point temp;

@@ -585,6 +585,10 @@ public:
                      const std::string& ns = "Sphere", std::size_t id = 0);
   bool publishSphere(const geometry_msgs::msg::Point& point, Colors color = BLUE,
                      Scales scale = MEDIUM, const std::string& ns = "Sphere", std::size_t id = 0);
+  bool publishSphere(const geometry_msgs::msg::Point& point, Colors color,
+                     double scale, const std::string& ns = "Sphere", std::size_t id = 0);
+  bool publishSphere(const geometry_msgs::msg::Point& point, const std_msgs::msg::ColorRGBA& color,
+                     double scale, const std::string& ns = "Sphere", std::size_t id = 0);
   bool publishSphere(const geometry_msgs::msg::Pose& pose, Colors color = BLUE,
                      Scales scale = MEDIUM, const std::string& ns = "Sphere", std::size_t id = 0);
   bool publishSphere(const geometry_msgs::msg::Pose& pose, Colors color, double scale,
@@ -748,6 +752,7 @@ public:
    * \param scale - an enum pre-defined name of a size
    * \return true on success
    */
+  /*
   bool publishLine(const Eigen::Isometry3d& point1, const Eigen::Isometry3d& point2,
                    Colors color = BLUE, Scales scale = MEDIUM);
   bool publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2,
@@ -764,6 +769,32 @@ public:
                    const std_msgs::msg::ColorRGBA& color, Scales scale = MEDIUM);
   bool publishLine(const geometry_msgs::msg::Point& point1, const geometry_msgs::msg::Point& point2,
                    const std_msgs::msg::ColorRGBA& color, const geometry_msgs::msg::Vector3& scale);
+  */
+
+  /**
+   * \brief Display a marker of line
+   * \param point1 - x,y,z of start of line
+   * \param point2 - x,y,z of end of line
+   * \param color - an enum pre-defined name of a color
+   * \param scale - an enum pre-defined name of a size
+   * \return true on success
+   */
+  bool publishLine(const Eigen::Isometry3d& point1, const Eigen::Isometry3d& point2,
+                   Colors color = BLUE, Scales scale = MEDIUM, std::size_t id = 0);
+  bool publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2,
+                   Colors color = BLUE, Scales scale = MEDIUM, std::size_t id = 0);
+  bool publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2, Colors color,
+                   double radius, std::size_t id = 0);
+  bool publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2,
+                   const std_msgs::msg::ColorRGBA& color, Scales scale = MEDIUM, std::size_t id = 0);
+  bool publishLine(const Eigen::Vector3d& point1, const Eigen::Vector3d& point2,
+                   const std_msgs::msg::ColorRGBA& color, double radius, std::size_t id = 0);
+  bool publishLine(const geometry_msgs::msg::Point& point1, const geometry_msgs::msg::Point& point2,
+                   Colors color = BLUE, Scales scale = MEDIUM, std::size_t id = 0);
+  bool publishLine(const geometry_msgs::msg::Point& point1, const geometry_msgs::msg::Point& point2,
+                   const std_msgs::msg::ColorRGBA& color, Scales scale = MEDIUM, std::size_t id = 0);
+  bool publishLine(const geometry_msgs::msg::Point& point1, const geometry_msgs::msg::Point& point2,
+                   const std_msgs::msg::ColorRGBA& color, const geometry_msgs::msg::Vector3& scale, std::size_t id = 0);
 
   /**
    * \brief Display a marker of lines
@@ -842,6 +873,9 @@ public:
    */
   bool publishPolygon(const geometry_msgs::msg::Polygon& polygon, Colors color = RED,
                       Scales scale = MEDIUM, const std::string& ns = "Polygon");
+
+  bool publishPolygon(const geometry_msgs::msg::Polygon& polygon, Colors color,
+                      double scale, const std::string& ns = "Polygon");
 
   /**
    * \brief Publish transformed wireframe cuboid. Useful eg to show an oriented bounding box.
